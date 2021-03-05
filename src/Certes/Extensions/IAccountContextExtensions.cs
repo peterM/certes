@@ -15,16 +15,16 @@ namespace Certes
         /// Deactivates the current account.
         /// </summary>
         /// <returns>The account deactivated.</returns>
-        public static Task<Account> Deactivate(
+        public static Task<Account> DeactivateAsync(
             this Task<IAccountContext> account)
-            => account.ContinueWith(a => a.Result.Deactivate()).Unwrap();
+            => account.ContinueWith(a => a.Result.DeactivateAsync()).Unwrap();
 
         /// <summary>
         /// Gets the location of the account.
         /// </summary>
         /// <param name="account">The account.</param>
         /// <returns>The location URI.</returns>
-        public static Task<Uri> Location(this Task<IAccountContext> account)
+        public static Task<Uri> GetLocationAsync(this Task<IAccountContext> account)
             => account.ContinueWith(r => r.Result.Location);
     }
 

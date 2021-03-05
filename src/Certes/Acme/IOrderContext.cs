@@ -15,20 +15,20 @@ namespace Certes.Acme
         /// <returns>
         /// The list of authorizations.
         /// </returns>
-        Task<IEnumerable<IAuthorizationContext>> Authorizations();
+        Task<IEnumerable<IAuthorizationContext>> GetAuthorizationsAsync();
 
         /// <summary>
         /// Finalizes the certificate order.
         /// </summary>
         /// <param name="csr">The CSR in DER.</param>
         /// <returns>The order finalized.</returns>
-        Task<Order> Finalize(byte[] csr);
+        Task<Order> FinalizeOrderAsync(byte[] csr);
         
         /// <summary>
         /// Downloads the certificate chain in PEM.
         /// </summary>
         /// <param name="preferredChain">The preferred Root Certificate.</param>
         /// <returns>The certificate chain in PEM.</returns>
-        Task<CertificateChain> Download(string preferredChain = null);
+        Task<CertificateChain> DownloadOrderedCertificatesAsync(string preferredChain = null);
     }
 }

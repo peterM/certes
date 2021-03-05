@@ -23,7 +23,7 @@ namespace Certes
         /// </summary>
         /// <param name="authChallenge">The authentication challenge.</param>
         /// <returns>The challenge updated.</returns>
-        Task<AcmeResult<ChallengeEntity>> CompleteChallenge(ChallengeEntity authChallenge);
+        Task<AcmeResult<ChallengeEntity>> CompleteChallengeAsync(ChallengeEntity authChallenge);
 
         /// <summary>
         /// Computes the DNS value for the <paramref name="challenge"/>.
@@ -44,49 +44,49 @@ namespace Certes
         /// </summary>
         /// <param name="location">The authorization location URI.</param>
         /// <returns>The authorization retrieved.</returns>
-        Task<AcmeResult<AuthorizationEntity>> GetAuthorization(Uri location);
+        Task<AcmeResult<AuthorizationEntity>> GetAuthorizationAsync(Uri location);
 
         /// <summary>
         /// Create a new authorization.
         /// </summary>
         /// <param name="identifier">The identifier to be authorized.</param>
         /// <returns>The authorization created.</returns>
-        Task<AcmeResult<AuthorizationEntity>> NewAuthorization(AuthorizationIdentifier identifier);
+        Task<AcmeResult<AuthorizationEntity>> RequestNewAuthorizationAsync(AuthorizationIdentifier identifier);
 
         /// <summary>
         /// Creates a new certificate.
         /// </summary>
         /// <param name="csrProvider">The certificate signing request (CSR) provider.</param>
         /// <returns>The certificate issued.</returns>
-        Task<AcmeCertificate> NewCertificate(ICertificationRequestBuilder csrProvider);
+        Task<AcmeCertificate> NewCertificateAsync(ICertificationRequestBuilder csrProvider);
 
         /// <summary>
         /// Creates a new certificate.
         /// </summary>
         /// <param name="csrBytes">The certificate signing request data.</param>
         /// <returns>The certificate issued.</returns>
-        Task<AcmeCertificate> NewCertificate(byte[] csrBytes);
+        Task<AcmeCertificate> NewCertificateAsync(byte[] csrBytes);
 
         /// <summary>
         /// Creates a new registraton.
         /// </summary>
         /// <param name="contact">The contact method, e.g. <c>mailto:admin@example.com</c>.</param>
         /// <returns>The ACME account created.</returns>
-        Task<AcmeAccount> NewRegistraton(params string[] contact);
+        Task<AcmeAccount> NewRegistratonAsync(params string[] contact);
 
         /// <summary>
         /// Revokes the certificate.
         /// </summary>
         /// <param name="certificate">The certificate.</param>
         /// <returns>The certificate revoked.</returns>
-        Task<AcmeCertificate> RevokeCertificate(AcmeCertificate certificate);
+        Task<AcmeCertificate> RevokeCertificateAsync(AcmeCertificate certificate);
 
         /// <summary>
         /// Updates the registration.
         /// </summary>
         /// <param name="account">The account to update.</param>
         /// <returns>The updated ACME account.</returns>
-        Task<AcmeAccount> UpdateRegistration(AcmeAccount account);
+        Task<AcmeAccount> UpdateRegistrationAsync(AcmeAccount account);
 
         /// <summary>
         /// Changes the registration key.
@@ -94,13 +94,13 @@ namespace Certes
         /// <param name="account">The account.</param>
         /// <param name="newKey">The new registration key.</param>
         /// <returns>The awaitable.</returns>
-        Task ChangeKey(AcmeAccount account, KeyInfo newKey);
+        Task ChangeKeyAsync(AcmeAccount account, KeyInfo newKey);
 
         /// <summary>
         /// Deletes the registration.
         /// </summary>
         /// <returns>The awaitable.</returns>
-        Task DeleteRegistration(AcmeAccount account);
+        Task DeleteRegistrationAsync(AcmeAccount account);
 
         /// <summary>
         /// Uses the specified account key data.

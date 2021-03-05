@@ -28,13 +28,13 @@ namespace Certes.Acme
         /// <returns>
         /// The orders.
         /// </returns>
-        public async Task<IEnumerable<IOrderContext>> Orders()
+        public async Task<IEnumerable<IOrderContext>> GetOrdersAsync()
         {
             var orderList = new List<IOrderContext>();
             var next = Location;
             while (next != null)
             {
-                var resp = await Context.HttpClient.Get<OrderList>(next);
+                var resp = await Context.HttpClient.GetAsync<OrderList>(next);
 
                 orderList.AddRange(
                     resp.Resource.Orders.Select(o => new OrderContext(Context, o)));

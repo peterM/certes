@@ -13,7 +13,7 @@ namespace Certes.Acme
         /// Gets the challenges for this authorization.
         /// </summary>
         /// <returns>The list fo challenges.</returns>
-        Task<IEnumerable<IChallengeContext>> Challenges();
+        Task<IEnumerable<IChallengeContext>> GetChallengesAsync();
 
         /// <summary>
         /// Deactivates this authzorization.
@@ -21,6 +21,6 @@ namespace Certes.Acme
         /// <returns>
         /// The authorization deactivated.
         /// </returns>
-        Task<Authorization> Deactivate();
+        Task<Authorization> DeactivateAsync();
     }
 }

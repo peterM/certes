@@ -13,7 +13,7 @@ namespace Certes.Acme
         /// Gets the orders
         /// </summary>
         /// <returns>The orders.</returns>
-        Task<IOrderListContext> Orders();
+        Task<IOrderListContext> GetOrdersAsync();
 
         /// <summary>
         /// Updates the current account.
@@ -21,12 +21,12 @@ namespace Certes.Acme
         /// <param name="agreeTermsOfService">Set to <c>true</c> to accept the terms of service.</param>
         /// <param name="contact">The contact infomation.</param>
         /// <returns>The account.</returns>
-        Task<Account> Update(IList<string> contact = null, bool agreeTermsOfService = false);
+        Task<Account> UpdateAsync(IList<string> contact = null, bool agreeTermsOfService = false);
 
         /// <summary>
         /// Deactivates the current account.
         /// </summary>
         /// <returns>The account deactivated.</returns>
-        Task<Account> Deactivate();
+        Task<Account> DeactivateAsync();
     }
 }

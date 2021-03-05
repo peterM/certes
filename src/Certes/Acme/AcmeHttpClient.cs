@@ -86,11 +86,11 @@ namespace Certes.Acme
         /// <typeparam name="T"></typeparam>
         /// <param name="uri">The URI.</param>
         /// <returns></returns>
-        public async Task<AcmeHttpResponse<T>> Get<T>(Uri uri)
+        public async Task<AcmeHttpResponse<T>> GetAsync<T>(Uri uri)
         {
             using (var response = await Http.GetAsync(uri))
             {
-                return await ProcessResponse<T>(response);
+                return await ProcessResponseAsync<T>(response);
             }
         }
 
@@ -101,7 +101,7 @@ namespace Certes.Acme
         /// <param name="uri">The URI.</param>
         /// <param name="payload">The payload.</param>
         /// <returns></returns>
-        public async Task<AcmeHttpResponse<T>> Post<T>(Uri uri, object payload)
+        public async Task<AcmeHttpResponse<T>> PostAsync<T>(Uri uri, object payload)
         {
             var payloadJson = JsonConvert.SerializeObject(payload, Formatting.None, jsonSettings);
             var content = new StringContent(payloadJson, Encoding.UTF8, MimeJoseJson);
@@ -109,7 +109,7 @@ namespace Certes.Acme
             content.Headers.ContentType.CharSet = null;
             using (var response = await Http.PostAsync(uri, content))
             {
-                return await ProcessResponse<T>(response);
+                return await ProcessResponseAsync<T>(response);
             }
         }
 
@@ -119,12 +119,12 @@ namespace Certes.Acme
         /// <returns>
         /// The nonce.
         /// </returns>
-        public async Task<string> ConsumeNonce()
+        public async Task<string> ConsumeNonceAsync()
         {
             var nonce = Interlocked.Exchange(ref this.nonce, null);
             while (nonce == null)
             {
-                await FetchNonce();
+                await FetchNonceAsync();
                 nonce = Interlocked.Exchange(ref this.nonce, null);
             }
 
@@ -139,9 +139,13 @@ namespace Certes.Acme
                 var date = response.Headers.RetryAfter.Date;
                 var delta = response.Headers.RetryAfter.Delta;
                 if (date.HasValue)
+                {
                     return Math.Abs((date.Value - DateTime.UtcNow).TotalSeconds);
+                }
                 else if (delta.HasValue)
+                {
                     return delta.Value.TotalSeconds;
+                }
             }
 
             return 0;
@@ -177,7 +181,7 @@ namespace Certes.Acme
             return links;
         }
 
-        private async Task<AcmeHttpResponse<T>> ProcessResponse<T>(HttpResponseMessage response)
+        private async Task<AcmeHttpResponse<T>> ProcessResponseAsync<T>(HttpResponseMessage response)
         {
             var location = response.Headers.Location;
             var resource = default(T);
@@ -215,9 +219,9 @@ namespace Certes.Acme
             return new AcmeHttpResponse<T>(location, resource, links, error, retryafter);
         }
 
-        private async Task FetchNonce()
+        private async Task FetchNonceAsync()
         {
-            newNonceUri = newNonceUri ?? (await Get<Directory>(directoryUri)).Resource.NewNonce;
+            newNonceUri = newNonceUri ?? (await GetAsync<Directory>(directoryUri)).Resource.NewNonce;
             var response = await Http.SendAsync(new HttpRequestMessage
             {
                 RequestUri = newNonceUri,

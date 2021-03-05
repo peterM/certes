@@ -18,9 +18,9 @@ namespace Certes
         /// <param name="optional">if set to <c>true</c>, the resource is optional.</param>
         /// <returns>The resource URI, or <c>null</c> if not found</returns>
         /// <exception cref="NotSupportedException">If the ACME operation not supported.</exception>
-        internal static async Task<Uri> GetResourceUri(this IAcmeContext context, Func<Directory, Uri> getter, bool optional = false)
+        internal static async Task<Uri> GetResourceUriAsync(this IAcmeContext context, Func<Directory, Uri> getter, bool optional = false)
         {
-            var dir = await context.GetDirectory();
+            var dir = await context.GetDirectoryAsync();
             var uri = getter(dir);
             if (!optional && uri == null)
             {
@@ -42,17 +42,17 @@ namespace Certes
         /// <returns>
         /// The account created.
         /// </returns>
-        public static Task<IAccountContext> NewAccount(this IAcmeContext context, string email, bool termsOfServiceAgreed = false, string eabKeyId = null, string eabKey = null, string eabKeyAlg = null)
-            => context.NewAccount(new[] { $"mailto:{email}" }, termsOfServiceAgreed, eabKeyId, eabKey, eabKeyAlg);
+        public static Task<IAccountContext> CreateNewAccountAsync(this IAcmeContext context, string email, bool termsOfServiceAgreed = false, string eabKeyId = null, string eabKey = null, string eabKeyAlg = null)
+            => context.CreateNewAccountAsync(new[] { $"mailto:{email}" }, termsOfServiceAgreed, eabKeyId, eabKey, eabKeyAlg);
 
         /// <summary>
         /// Gets the terms of service link from the ACME server.
         /// </summary>
         /// <param name="context">The ACME context.</param>
         /// <returns>The terms of service link.</returns>
-        public static async Task<Uri> TermsOfService(this IAcmeContext context)
+        public static async Task<Uri> GetTermsOfServiceUriAsync(this IAcmeContext context)
         {
-            var dir = await context.GetDirectory();
+            var dir = await context.GetDirectoryAsync();
             return dir.Meta?.TermsOfService;
         }
     }

@@ -15,6 +15,6 @@ namespace Certes.Acme
         /// <returns>
         /// The orders.
         /// </returns>
-        Task<IEnumerable<IOrderContext>> Orders();
+        Task<IEnumerable<IOrderContext>> GetOrdersAsync();
     }
 }

@@ -67,7 +67,7 @@ namespace Certes
         /// </summary>
         /// <param name="contact">The contact method, e.g. <c>mailto:admin@example.com</c>.</param>
         /// <returns>The ACME account created.</returns>
-        public async Task<AcmeAccount> NewRegistraton(params string[] contact)
+        public async Task<AcmeAccount> NewRegistratonAsync(params string[] contact)
         {
             if (this.key == null)
             {
@@ -80,8 +80,8 @@ namespace Certes
                 Resource = ResourceTypes.NewRegistration
             };
 
-            var uri = await this.handler.GetResourceUri(registration.Resource);
-            var result = await this.handler.Post(uri, registration, key);
+            var uri = await this.handler.GetResourceUriAsync(registration.Resource);
+            var result = await this.handler.PostAsync(uri, registration, key);
             ThrowIfError(result, uri);
 
             var account = new AcmeAccount
@@ -104,7 +104,7 @@ namespace Certes
         /// <param name="account">The account to update.</param>
         /// <returns>The updated ACME account.</returns>
         /// <exception cref="InvalidOperationException">If the account key is missing.</exception>
-        public async Task<AcmeAccount> UpdateRegistration(AcmeAccount account)
+        public async Task<AcmeAccount> UpdateRegistrationAsync(AcmeAccount account)
         {
             if (this.key == null)
             {
@@ -113,7 +113,7 @@ namespace Certes
 
             var registration = account.Data;
 
-            var result = await this.handler.Post(account.Location, registration, key);
+            var result = await this.handler.PostAsync(account.Location, registration, key);
             ThrowIfError(result, account.Location);
 
             account.Data = result.Data;
@@ -126,7 +126,7 @@ namespace Certes
         /// <param name="account">The account.</param>
         /// <param name="newKey">The new registration key.</param>
         /// <returns>The awaitable.</returns>
-        public async Task ChangeKey(AcmeAccount account, KeyInfo newKey)
+        public async Task ChangeKeyAsync(AcmeAccount account, KeyInfo newKey)
         {
             var keyPair = new AccountKey(newKey);
             
@@ -146,8 +146,8 @@ namespace Certes
                 Resource = ResourceTypes.KeyChange
             };
 
-            var uri = await this.handler.GetResourceUri(ResourceTypes.KeyChange);
-            var result = await this.handler.Post(uri, payloadWithResourceType, key);
+            var uri = await this.handler.GetResourceUriAsync(ResourceTypes.KeyChange);
+            var result = await this.handler.PostAsync(uri, payloadWithResourceType, key);
             ThrowIfError(result, uri);
 
             this.key = keyPair;
@@ -157,14 +157,14 @@ namespace Certes
         /// Deletes the registration.
         /// </summary>
         /// <returns>The awaitable.</returns>
-        public async Task DeleteRegistration(AcmeAccount account)
+        public async Task DeleteRegistrationAsync(AcmeAccount account)
         {
             if (this.key == null)
             {
                 throw new InvalidOperationException();
             }
 
-            await this.handler.Post(
+            await this.handler.PostAsync(
                 account.Location,
                 new RegistrationEntity
                 {
@@ -178,7 +178,7 @@ namespace Certes
         /// <param name="identifier">The identifier to be authorized.</param>
         /// <returns>The authorization created.</returns>
         /// <exception cref="InvalidOperationException">If the account key is missing.</exception>
-        public async Task<AcmeResult<AuthorizationEntity>> NewAuthorization(AuthorizationIdentifier identifier)
+        public async Task<AcmeResult<AuthorizationEntity>> RequestNewAuthorizationAsync(AuthorizationIdentifier identifier)
         {
             if (this.key == null)
             {
@@ -191,13 +191,13 @@ namespace Certes
                 Resource = ResourceTypes.NewAuthorization
             };
 
-            var uri = await handler.GetResourceUri(ResourceTypes.NewAuthorization);
-            var result = await handler.Post(uri, auth, key);
+            var uri = await handler.GetResourceUriAsync(ResourceTypes.NewAuthorization);
+            var result = await handler.PostAsync(uri, auth, key);
             ThrowIfError(result, uri);
 
             if (result.HttpStatus == HttpStatusCode.SeeOther) // An authentication with the same identifier exists.
             {
-                result = await handler.Get<AuthorizationEntity>(result.Location);
+                result = await handler.GetAsync<AuthorizationEntity>(result.Location);
                 ThrowIfError(result, result.Location);
             }
 
@@ -217,9 +217,9 @@ namespace Certes
         /// </summary>
         /// <param name="location">The authorization location URI.</param>
         /// <returns>The authorization retrieved.</returns>
-        public async Task<AcmeResult<AuthorizationEntity>> GetAuthorization(Uri location)
+        public async Task<AcmeResult<AuthorizationEntity>> GetAuthorizationAsync(Uri location)
         {
-            var result = await this.handler.Get<AuthorizationEntity>(location);
+            var result = await this.handler.GetAsync<AuthorizationEntity>(location);
             ThrowIfError(result, location);
 
             return new AcmeResult<AuthorizationEntity>
@@ -265,7 +265,7 @@ namespace Certes
         /// <param name="authChallenge">The authentication challenge.</param>
         /// <returns>The challenge updated.</returns>
         /// <exception cref="InvalidOperationException">If the account key is missing.</exception>
-        public async Task<AcmeResult<ChallengeEntity>> CompleteChallenge(ChallengeEntity authChallenge)
+        public async Task<AcmeResult<ChallengeEntity>> CompleteChallengeAsync(ChallengeEntity authChallenge)
         {
             if (this.key == null)
             {
@@ -278,7 +278,7 @@ namespace Certes
                 Type = authChallenge.Type
             };
 
-            var result = await this.handler.Post(authChallenge.Uri, challenge, key);
+            var result = await this.handler.PostAsync(authChallenge.Uri, challenge, key);
             ThrowIfError(result, authChallenge.Uri);
 
             return new AcmeResult<ChallengeEntity>
@@ -297,7 +297,7 @@ namespace Certes
         /// </summary>
         /// <param name="csrBytes">The certificate signing request data.</param>
         /// <returns>The certificate issued.</returns>
-        public async Task<AcmeCertificate> NewCertificate(byte[] csrBytes)
+        public async Task<AcmeCertificate> NewCertificateAsync(byte[] csrBytes)
         {
             var payload = new CertificateEntity
             {
@@ -305,8 +305,8 @@ namespace Certes
                 Resource = ResourceTypes.NewCertificate
             };
 
-            var uri = await this.handler.GetResourceUri(ResourceTypes.NewCertificate);
-            var result = await this.handler.Post(uri, payload, key);
+            var uri = await this.handler.GetResourceUriAsync(ResourceTypes.NewCertificate);
+            var result = await this.handler.PostAsync(uri, payload, key);
             ThrowIfError(result, uri);
 
             byte[] pem;
@@ -333,7 +333,7 @@ namespace Certes
                 }
                 else
                 {
-                    var issuerResult = await this.handler.Get<AcmeCertificate>(upLink.Uri);
+                    var issuerResult = await this.handler.GetAsync<AcmeCertificate>(upLink.Uri);
                     currentCert.Issuer = new AcmeCertificate
                     {
                         Raw = issuerResult.Raw,
@@ -354,10 +354,10 @@ namespace Certes
         /// </summary>
         /// <param name="csrProvider">The certificate signing request (CSR) provider.</param>
         /// <returns>The certificate issued.</returns>
-        public async Task<AcmeCertificate> NewCertificate(ICertificationRequestBuilder csrProvider)
+        public async Task<AcmeCertificate> NewCertificateAsync(ICertificationRequestBuilder csrProvider)
         {
             var csrBytes = csrProvider.Generate();
-            var cert = await NewCertificate(csrBytes);
+            var cert = await NewCertificateAsync(csrBytes);
             cert.Key = csrProvider.Export();
             return cert;
         }
@@ -367,7 +367,7 @@ namespace Certes
         /// </summary>
         /// <param name="certificate">The certificate.</param>
         /// <returns>The certificate revoked.</returns>
-        public async Task<AcmeCertificate> RevokeCertificate(AcmeCertificate certificate)
+        public async Task<AcmeCertificate> RevokeCertificateAsync(AcmeCertificate certificate)
         {
             var payload = new RevokeCertificateEntity
             {
@@ -375,8 +375,8 @@ namespace Certes
                 Resource = ResourceTypes.RevokeCertificate
             };
 
-            var uri = await this.handler.GetResourceUri(ResourceTypes.RevokeCertificate);
-            var result = await this.handler.Post(uri, payload, key);
+            var uri = await this.handler.GetResourceUriAsync(ResourceTypes.RevokeCertificate);
+            var result = await this.handler.PostAsync(uri, payload, key);
             ThrowIfError(result, uri);
 
             certificate.Revoked = true;

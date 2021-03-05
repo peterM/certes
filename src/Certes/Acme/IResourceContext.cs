@@ -26,6 +26,6 @@ namespace Certes.Acme
         /// Gets the ACME resource.
         /// </summary>
         /// <returns>The resource entity.</returns>
-        Task<T> Resource();
+        Task<T> GetResourceAsync();
     }
 }

@@ -4,9 +4,11 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Certes.Json;
 using Certes.Jws;
 using Certes.Properties;
+
 using Newtonsoft.Json;
 
 namespace Certes.Acme
@@ -81,9 +83,9 @@ namespace Certes.Acme
         /// </summary>
         /// <param name="resourceType">Type of the ACME resource.</param>
         /// <returns>The ACME resource URI</returns>
-        public async Task<Uri> GetResourceUri(string resourceType)
+        public async Task<Uri> GetResourceUriAsync(string resourceType)
         {
-            await FetchDirectory(false);
+            await FetchDirectoryAsync(false);
             var resourceUri =
                 ResourceTypes.NewRegistration == resourceType ? this.directory.NewReg :
                 ResourceTypes.NewAuthorization == resourceType ? this.directory.NewAuthz :
@@ -106,10 +108,10 @@ namespace Certes.Acme
         /// <typeparam name="T">The resource entity type.</typeparam>
         /// <param name="uri">The URI.</param>
         /// <returns>The ACME response.</returns>
-        public async Task<AcmeResponse<T>> Get<T>(Uri uri)
+        public async Task<AcmeResponse<T>> GetAsync<T>(Uri uri)
         {
             var resp = await http.GetAsync(uri);
-            var result = await ReadResponse<T>(resp);
+            var result = await ReadResponseAsync<T>(resp);
             return result;
         }
 
@@ -121,13 +123,13 @@ namespace Certes.Acme
         /// <param name="entity">The entity.</param>
         /// <param name="keyPair">The signing key pair.</param>
         /// <returns>The ACME response.</returns>
-        public async Task<AcmeResponse<T>> Post<T>(Uri uri, T entity, IAccountKey keyPair)
+        public async Task<AcmeResponse<T>> PostAsync<T>(Uri uri, T entity, IAccountKey keyPair)
         {
-            await FetchDirectory(false);
+            await FetchDirectoryAsync(false);
 
-            var content = await GenerateRequestContent(entity, keyPair);
+            var content = await GenerateRequestContentAsync(entity, keyPair);
             var resp = await http.PostAsync(uri, content);
-            var result = await ReadResponse<T>(resp, (entity as EntityBase)?.Resource);
+            var result = await ReadResponseAsync<T>(resp, (entity as EntityBase)?.Resource);
             return result;
         }
 
@@ -144,26 +146,26 @@ namespace Certes.Acme
             return encoder.Sign(entity, nonce);
         }
 
-        private async Task FetchDirectory(bool force)
+        private async Task FetchDirectoryAsync(bool force)
         {
             if (this.directory == null || force)
             {
                 var uri = serverUri;
-                var resp = await this.Get<AcmeDirectory>(uri);
+                var resp = await this.GetAsync<AcmeDirectory>(uri);
                 this.directory = resp.Data;
             }
         }
 
-        private async Task<StringContent> GenerateRequestContent(object entity, IAccountKey keyPair)
+        private async Task<StringContent> GenerateRequestContentAsync(object entity, IAccountKey keyPair)
         {
-            var nonce = await this.GetNonce();
+            var nonce = await this.GetNonceAsync();
             var body = Encode(entity, keyPair, nonce);
             var bodyJson = JsonConvert.SerializeObject(body, Formatting.None, jsonSettings);
 
             return new StringContent(bodyJson, Encoding.UTF8, MimeJson);
         }
 
-        private async Task<AcmeResponse<T>> ReadResponse<T>(HttpResponseMessage response, string resourceType = null)
+        private async Task<AcmeResponse<T>> ReadResponseAsync<T>(HttpResponseMessage response, string resourceType = null)
         {
             var data = new AcmeResponse<T>();
 
@@ -253,12 +255,12 @@ namespace Certes.Acme
             return false;
         }
 
-        private async Task<string> GetNonce()
+        private async Task<string> GetNonceAsync()
         {
             var nonce = Interlocked.Exchange(ref this.nonce, null);
             while (nonce == null)
             {
-                await this.FetchDirectory(true);
+                await this.FetchDirectoryAsync(true);
                 nonce = Interlocked.Exchange(ref this.nonce, null);
             }
 

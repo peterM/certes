@@ -49,7 +49,7 @@ namespace Certes
         /// Gets the ACME account context.
         /// </summary>
         /// <returns>The ACME account context.</returns>
-        Task<IAccountContext> Account();
+        Task<IAccountContext> GetAccountAsync();
 
         /// <summary>
         /// Gets the ACME directory.
@@ -57,7 +57,7 @@ namespace Certes
         /// <returns>
         /// The ACME directory.
         /// </returns>
-        Task<Directory> GetDirectory();
+        Task<Directory> GetDirectoryAsync();
 
         /// <summary>
         /// Creates an account.
@@ -70,7 +70,7 @@ namespace Certes
         /// <returns>
         /// The account created.
         /// </returns>
-        Task<IAccountContext> NewAccount(IList<string> contact, bool termsOfServiceAgreed = false, string eabKeyId = null, string eabKey = null, string eabKeyAlg = null);
+        Task<IAccountContext> CreateNewAccountAsync(IList<string> contact, bool termsOfServiceAgreed = false, string eabKeyId = null, string eabKey = null, string eabKeyAlg = null);
 
         /// <summary>
         /// Revokes the certificate.
@@ -81,14 +81,14 @@ namespace Certes
         /// <returns>
         /// The awaitable.
         /// </returns>
-        Task RevokeCertificate(byte[] certificate, RevocationReason reason = RevocationReason.Unspecified, IKey certificatePrivateKey = null);
+        Task RevokeCertificateAsync(byte[] certificate, RevocationReason reason = RevocationReason.Unspecified, IKey certificatePrivateKey = null);
 
         /// <summary>
         /// Changes the account key.
         /// </summary>
         /// <param name="key">The new account key.</param>
         /// <returns>The account resource.</returns>
-        Task<Account> ChangeKey(IKey key = null);
+        Task<Account> ChangeKeyAsync(IKey key = null);
 
         /// <summary>
         /// Creates a new the order.
@@ -99,7 +99,7 @@ namespace Certes
         /// <returns>
         /// The order context created.
         /// </returns>
-        Task<IOrderContext> NewOrder(IList<string> identifiers, DateTimeOffset? notBefore = null, DateTimeOffset? notAfter = null);
+        Task<IOrderContext> NewOrderAsync(IList<string> identifiers, DateTimeOffset? notBefore = null, DateTimeOffset? notAfter = null);
 
         /// <summary>
         /// Signs the data with account key.
@@ -107,7 +107,7 @@ namespace Certes
         /// <param name="entity">The data to sign.</param>
         /// <param name="uri">The URI for the request.</param>
         /// <returns>The JWS payload.</returns>
-        Task<JwsPayload> Sign(object entity, Uri uri);
+        Task<JwsPayload> SignAsync(object entity, Uri uri);
 
         /// <summary>
         /// Gets the order by specified location.

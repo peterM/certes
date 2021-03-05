@@ -30,9 +30,9 @@ namespace Certes.Acme
         /// <returns>
         /// The list fo challenges.
         /// </returns>
-        public async Task<IEnumerable<IChallengeContext>> Challenges()
+        public async Task<IEnumerable<IChallengeContext>> GetChallengesAsync()
         {
-            var authz = await Resource();
+            var authz = await GetResourceAsync();
             return authz
                 .Challenges?
                 .Select(c => new ChallengeContext(Context, c.Url, c.Type, c.Token)) ??
@@ -45,10 +45,10 @@ namespace Certes.Acme
         /// <returns>
         /// The authorization deactivated.
         /// </returns>
-        public async Task<Authorization> Deactivate()
+        public async Task<Authorization> DeactivateAsync()
         {
             var payload = new Authorization { Status = AuthorizationStatus.Deactivated };
-            var resp = await Context.HttpClient.Post<Authorization>(Context, Location, payload, true);
+            var resp = await Context.HttpClient.PostAsync<Authorization>(Context, Location, payload, true);
             return resp.Resource;
         }
     }

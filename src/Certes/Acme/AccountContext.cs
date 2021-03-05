@@ -30,10 +30,10 @@ namespace Certes.Acme
         /// <returns>
         /// The account deactivated.
         /// </returns>
-        public async Task<Account> Deactivate()
+        public async Task<Account> DeactivateAsync()
         {
             var payload = new Account { Status = AccountStatus.Deactivated };
-            var resp = await Context.HttpClient.Post<Account>(Context, Location, payload, true);
+            var resp = await Context.HttpClient.PostAsync<Account>(Context, Location, payload, true);
             return resp.Resource;
         }
 
@@ -43,9 +43,9 @@ namespace Certes.Acme
         /// <returns>
         /// The orders list.
         /// </returns>
-        public async Task<IOrderListContext> Orders()
+        public async Task<IOrderListContext> GetOrdersAsync()
         {
-            var account = await Resource();
+            Account account = await GetResourceAsync();
             return new OrderListContext(Context, account.Orders);
         }
 
@@ -57,9 +57,9 @@ namespace Certes.Acme
         /// <returns>
         /// The account.
         /// </returns>
-        public async Task<Account> Update(IList<string> contact = null, bool agreeTermsOfService = false)
+        public async Task<Account> UpdateAsync(IList<string> contact = null, bool agreeTermsOfService = false)
         {
-            var location = await Context.Account().Location();
+            var location = await Context.GetAccountAsync().GetLocationAsync();
             var account = new Account
             {
                 Contact = contact
@@ -70,7 +70,7 @@ namespace Certes.Acme
                 account.TermsOfServiceAgreed = true;
             }
 
-            var response = await Context.HttpClient.Post<Account>(Context, location, account, true);
+            var response = await Context.HttpClient.PostAsync<Account>(Context, location, account, true);
             return response.Resource;
         }
 
@@ -84,11 +84,11 @@ namespace Certes.Acme
         /// <param name="eabKey">Optional EAB key, if using external account binding.</param>
         /// <param name="eabKeyAlg">Optional EAB key algorithm, if using external account binding, defaults to HS256 if not specified</param>
         /// <returns>The ACME response.</returns>
-        internal static async Task<AcmeHttpResponse<Account>> NewAccount(
+        internal static async Task<AcmeHttpResponse<Account>> CreateNewAccountAsync(
             IAcmeContext context, Account body, bool ensureSuccessStatusCode,
             string eabKeyId = null, string eabKey = null, string eabKeyAlg = null)
         {
-            var endpoint = await context.GetResourceUri(d => d.NewAccount);
+            var endpoint = await context.GetResourceUriAsync(d => d.NewAccount);
             var jws = new JwsSigner(context.AccountKey);
             
             if (eabKeyId != null && eabKey != null)
@@ -137,7 +137,7 @@ namespace Certes.Acme
                 };
             }
 
-            return await context.HttpClient.Post<Account>(jws, endpoint, body, ensureSuccessStatusCode);
+            return await context.HttpClient.PostAsync<Account>(jws, endpoint, body, ensureSuccessStatusCode);
         }
     }
 }

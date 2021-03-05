@@ -26,9 +26,9 @@ namespace Certes.Acme
         /// <returns>
         /// The list of authorizations.
         /// </returns>
-        public async Task<IEnumerable<IAuthorizationContext>> Authorizations()
+        public async Task<IEnumerable<IAuthorizationContext>> GetAuthorizationsAsync()
         {
-            var order = await Resource();
+            var order = await GetResourceAsync();
             return order
                 .Authorizations?
                 .Select(a => new AuthorizationContext(Context, a)) ??
@@ -42,11 +42,11 @@ namespace Certes.Acme
         /// <returns>
         /// The order finalized.
         /// </returns>
-        public async Task<Order> Finalize(byte[] csr)
+        public async Task<Order> FinalizeOrderAsync(byte[] csr)
         {
-            var order = await Resource();
+            var order = await GetResourceAsync();
             var payload = new Order.Payload { Csr = JwsConvert.ToBase64String(csr) };
-            var resp = await Context.HttpClient.Post<Order>(Context, order.Finalize, payload, true);
+            var resp = await Context.HttpClient.PostAsync<Order>(Context, order.Finalize, payload, true);
             return resp.Resource;
         }
 
@@ -55,10 +55,10 @@ namespace Certes.Acme
         /// <param name="preferredChain">The preferred Root Certificate</param>
         /// </summary>
         /// <returns>The certificate chain in PEM.</returns>
-        public async Task<CertificateChain> Download(string preferredChain = null)
+        public async Task<CertificateChain> DownloadOrderedCertificatesAsync(string preferredChain = null)
         {
-            var order = await Resource();
-            var resp = await Context.HttpClient.Post<string>(Context, order.Certificate, null, false);
+            var order = await GetResourceAsync();
+            var resp = await Context.HttpClient.PostAsync<string>(Context, order.Certificate, null, false);
 
             var defaultchain = new CertificateChain(resp.Resource);
             if (defaultchain.MatchesPreferredChain(preferredChain) || !resp.Links.Contains("alternate"))
@@ -67,7 +67,7 @@ namespace Certes.Acme
             var alternateLinks = resp.Links["alternate"].ToList();
             foreach (var alternate in alternateLinks)
             {
-                resp = await Context.HttpClient.Post<string>(Context, alternate, null, false);
+                resp = await Context.HttpClient.PostAsync<string>(Context, alternate, null, false);
                 var chain = new CertificateChain(resp.Resource);
 
                 if (chain.MatchesPreferredChain(preferredChain))

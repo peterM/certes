@@ -21,9 +21,9 @@ namespace Certes
         /// <returns>
         /// The order finalized.
         /// </returns>
-        public static async Task<Order> Finalize(this IOrderContext context, CsrInfo csr, IKey key)
+        public static async Task<Order> FinalizeOrderAsync(this IOrderContext context, CsrInfo csr, IKey key)
         {
-            var builder = await context.CreateCsr(key);
+            var builder = await context.CreateCsrAsync(key);
             
             foreach (var (name, value) in csr.Fields)
             {
@@ -35,7 +35,7 @@ namespace Certes
                 builder.AddName("CN", builder.SubjectAlternativeNames[0]);
             }
 
-            return await context.Finalize(builder.Generate());
+            return await context.FinalizeOrderAsync(builder.Generate());
         }
 
         /// <summary>
@@ -44,10 +44,10 @@ namespace Certes
         /// <param name="context">The order context.</param>
         /// <param name="key">The private key.</param>
         /// <returns>The CSR.</returns>
-        public static async Task<CertificationRequestBuilder> CreateCsr(this IOrderContext context, IKey key)
+        public static async Task<CertificationRequestBuilder> CreateCsrAsync(this IOrderContext context, IKey key)
         {
             var builder = new CertificationRequestBuilder(key);
-            var order = await context.Resource();
+            var order = await context.GetResourceAsync();
             foreach (var identifier in order.Identifiers)
             {
                 builder.SubjectAlternativeNames.Add(identifier.Value);
@@ -67,21 +67,21 @@ namespace Certes
         /// <returns>
         /// The certificate generated.
         /// </returns>
-        public static async Task<CertificateChain> Generate(this IOrderContext context, CsrInfo csr, IKey key, string preferredChain = null, int retryCount = 1)
+        public static async Task<CertificateChain> GenerateCertificatesAsync(this IOrderContext context, CsrInfo csr, IKey key, string preferredChain = null, int retryCount = 1)
         {
-            var order = await context.Resource();
+            var order = await context.GetResourceAsync();
             if (order.Status != OrderStatus.Ready && // draft-11
                 order.Status != OrderStatus.Pending) // pre draft-11
             {
                 throw new AcmeException(string.Format(Strings.ErrorInvalidOrderStatusForFinalize, order.Status));
             }
 
-            order = await context.Finalize(csr, key);
+            order = await context.FinalizeOrderAsync(csr, key);
             
             while (order.Status == OrderStatus.Processing && retryCount-- > 0)
             {
                 await Task.Delay(TimeSpan.FromSeconds(Math.Max(context.RetryAfter, 1)));
-                order = await context.Resource();
+                order = await context.GetResourceAsync();
             }
 
             if (order.Status != OrderStatus.Valid)
@@ -89,7 +89,7 @@ namespace Certes
                 throw new AcmeException(Strings.ErrorFinalizeFailed);
             }
 
-            return await context.Download(preferredChain);
+            return await context.DownloadOrderedCertificatesAsync(preferredChain);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Certes
         /// <param name="value">The identifier value.</param>
         /// <param name="type">The identifier type.</param>
         /// <returns>The authorization found.</returns>
-        public static async Task<IAuthorizationContext> Authorization(this IOrderContext context, string value, IdentifierType type = IdentifierType.Dns)
+        public static async Task<IAuthorizationContext> GetAuthorizationAsync(this IOrderContext context, string value, IdentifierType type = IdentifierType.Dns)
         {
             var wildcard = value.StartsWith("*.");
             if (wildcard)
@@ -107,9 +107,9 @@ namespace Certes
                 value = value.Substring(2);
             }
 
-            foreach (var authzCtx in await context.Authorizations())
+            foreach (var authzCtx in await context.GetAuthorizationsAsync())
             {
-                var authz = await authzCtx.Resource();
+                var authz = await authzCtx.GetResourceAsync();
                 if (string.Equals(authz.Identifier.Value, value, StringComparison.OrdinalIgnoreCase) &&
                     wildcard == authz.Wildcard.GetValueOrDefault() &&
                     authz.Identifier.Type == type)
